@@ -4,6 +4,7 @@
     "rootDir": ".",
     "outDir": "build",
     "module": "es6",
+    "lib": ["dom"],
 
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

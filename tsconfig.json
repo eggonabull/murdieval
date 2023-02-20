@@ -2,8 +2,9 @@
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "build",
-    "module": "es6",
+    //"outDir": "build",
+    "outFile": "build/index.js",
+    "module": "AMD",
     "lib": ["dom"],
 
     /* Visit https://aka.ms/tsconfig to read more about this file */

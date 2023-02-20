@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <head></head>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    </head>
     <body>
         <canvas id="bg" width="1024" height="768">
             Your browser does not support the HTML5 canvas tag.
@@ -8,5 +10,8 @@
         <canvas id="fg" width="1024" height="768">
         </canvas>
     </body>
-    <script type="module" src="build/src/index.js"></script>
+    <script src="build/index.js"></script>
+    <script>
+        require(['src/index']);
+    </script>
 </html>

@@ -1,54 +1,71 @@
+import {Sprite, GameState} from 'types';
+
 let images_needed = 0;
 let images_loaded = 0;
-
-export type Sprite = 'overworld' | 'character';
+const sprite_size = 16;
 
 const images: {[key in Sprite]?: HTMLImageElement} = {};
 let _callback: CallableFunction;
 
-export class ContextMgr {
-  private ctx: CanvasRenderingContext2D;
+export function draw_sprite_map(sprite: Sprite, map: string, overlay: HTMLCanvasElement | undefined = undefined): HTMLCanvasElement | undefined {
+  const sprite_map = get_sprite(sprite);
+  if (!sprite_map) return;
 
-  constructor(ctx: CanvasRenderingContext2D) {
-    this.ctx = ctx;
+  const lines = map.split('\n').map(x => x.trim());
+  if (
+    lines.length > 0 &&
+    lines[0].trim().length === 0 &&
+    lines[lines.length - 1].trim().length === 0
+  ) {
+    lines.pop();
+    lines.shift();
   }
 
-  drawSpriteMap(sprite: Sprite, map: string, x = 0, y = 0) {
-    const sprimg = get_sprite(sprite);
-    if (!sprimg) return;
-    const lines = map.split('\n').map(x => x.trim());
-    if (
-      lines.length > 0 &&
-      lines[0].trim().length === 0 &&
-      lines[lines.length - 1].trim().length === 0
-    ) {
-      lines.pop();
-      lines.shift();
+  let map_width = lines[0].length * sprite_size / 2;
+  let map_height = lines.length * sprite_size;
+
+  let canvas;
+  if (overlay) {
+    canvas = overlay;
+    if (overlay.width != map_width || overlay.height != map_height) {
+      console.log('Overlay size mismatch', sprite);
+      return;
     }
-    for (let li = 0; li < lines.length; li += 1) {
-      const line = lines[li];
-      for (let ci = 0; ci < line.length; ci += 2) {
-        let x_char = line.charCodeAt(ci + 1);
-        let y_char = line.charCodeAt(ci);
-        if (x_char < 65 || x_char > 123 || y_char < 65 || y_char > 123) {
-          continue;
-        }
-        if (x_char >= 97) {
-          x_char -= 7;
-        }
-        if (y_char >= 97) {
-          y_char -= 7;
-        }
-        x_char -= 65;
-        y_char -= 65;
-        const sx = x_char * 16;
-        const sy = y_char * 16;
-        const dx = x + ci * 8;
-        const dy = y + li * 16;
-        this.ctx.drawImage(sprimg, sx, sy, 16, 16, dx, dy, 16, 16);
+  } else {
+    canvas = document.createElement('canvas');
+  }
+  canvas.width = map_width;
+  canvas.height = map_height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    console.log('bad context');
+    return;
+  }
+
+  for (let li = 0; li < lines.length; li += 1) {
+    const line = lines[li];
+    for (let ci = 0; ci < line.length; ci += 2) {
+      let x_char = line.charCodeAt(ci + 1);
+      let y_char = line.charCodeAt(ci);
+      if (x_char < 65 || x_char > 123 || y_char < 65 || y_char > 123) {
+        continue;
       }
+      if (x_char >= 97) {
+        x_char -= 7;
+      }
+      if (y_char >= 97) {
+        y_char -= 7;
+      }
+      x_char -= 65;
+      y_char -= 65;
+      const sx = x_char * sprite_size;
+      const sy = y_char * sprite_size;
+      const dx = ci / 2 * sprite_size;
+      const dy = li * sprite_size;
+      ctx.drawImage(sprite_map, sx, sy, 16, 16, dx, dy, 16, 16);
     }
   }
+  return canvas;
 }
 
 function image_loaded(this: GlobalEventHandlers, ev: Event) {

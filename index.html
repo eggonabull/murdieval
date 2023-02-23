@@ -2,12 +2,15 @@
 <html>
     <head>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <style>
+            #game_canvas {
+                width: 100%;
+            }
+        </style>
     </head>
     <body>
-        <canvas id="bg" width="1024" height="768">
+        <canvas id="game_canvas" width="640" height="480">
             Your browser does not support the HTML5 canvas tag.
-        </canvas>
-        <canvas id="fg" width="1024" height="768">
         </canvas>
     </body>
     <script src="build/index.js"></script>

@@ -1,6 +1,6 @@
-import { load_sprites, draw_sprite_map, get_sprite} from './images';
-import { layer0, layer0Sprite } from 'background';
-import { GameState, Direction, CopyBounds } from './types';
+import {load_sprites, draw_sprite_map, get_sprite} from './images';
+import {layer0, layer0Sprite} from 'background';
+import {GameState, Direction, CopyBounds} from './types';
 
 let hidden_canvas: HTMLCanvasElement;
 let hidden_context: CanvasRenderingContext2D;
@@ -29,14 +29,20 @@ window.onfocus = function () {
     frame_requested = true;
     window.requestAnimationFrame(gameLoop);
   }
-}
+};
+
+window.onblur = function () {
+  frame_requested = false;
+};
 
 function begin() {
   document.onkeydown = on_key_down;
   document.onkeyup = on_key_up;
   console.log('Beginning...');
-  const game_canvas = document.getElementById('game_canvas') as HTMLCanvasElement;
-  let can_ctx = game_canvas.getContext('2d');
+  const game_canvas = document.getElementById(
+    'game_canvas'
+  ) as HTMLCanvasElement;
+  const can_ctx = game_canvas.getContext('2d');
   if (can_ctx === null) {
     console.log('bad bgctx');
     return;
@@ -47,19 +53,19 @@ function begin() {
   hidden_canvas = document.createElement('canvas');
   hidden_canvas.width = game_canvas.width;
   hidden_canvas.height = game_canvas.height;
-  let hidden_ctx = hidden_canvas.getContext('2d')
+  const hidden_ctx = hidden_canvas.getContext('2d');
   if (!hidden_ctx) {
     console.log('bad context');
     return;
   }
   hidden_context = hidden_ctx;
-  let bg_sprite_map = draw_sprite_map(layer0Sprite, layer0);
+  const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0);
+
   if (!bg_sprite_map) {
     console.log('bad bg_sprite_map');
     return;
   }
   bg_render = bg_sprite_map;
-  frame_requested = true;
   window.requestAnimationFrame(gameLoop);
 }
 
@@ -82,7 +88,6 @@ function gameLoop(timestamp: DOMHighResTimeStamp) {
   }
 }
 
-
 function on_key_down(ev: KeyboardEvent) {
   // Detect which key was pressed
   keyArray[ev.key] = true;
@@ -102,7 +107,7 @@ function is_key_down(key: string) {
 function get_char_bb(gs: GameState): CopyBounds {
   const w = 16;
   const h = 32;
-  const l = gs.walking ? (Math.floor(gs.ticks / 5) % 4) * w: 0;
+  const l = gs.walking ? (Math.floor(gs.ticks / 5) % 4) * w : 0;
   let t;
   if (gs.direction === Direction.South) {
     t = 0;
@@ -120,29 +125,39 @@ function get_char_bb(gs: GameState): CopyBounds {
 }
 
 function animate_bg(gs: GameState) {
-  let bgx = gs.cwidth/2-(gs.char_pos.x);
-  let bgy = gs.cheight/2-(gs.char_pos.y);
-  if(bgx > 0) bgx = 0;
-  if(bgy > 0) bgy = 0;
-  if(bgx < gs.cwidth - bg_render.width) bgx = gs.cwidth - bg_render.width;
-  if(bgy < gs.cheight - bg_render.height) bgy = gs.cheight - bg_render.height;
+  let bgx = gs.cwidth / 2 - gs.char_pos.x;
+  let bgy = gs.cheight / 2 - gs.char_pos.y;
+  if (bgx > 0) bgx = 0;
+  if (bgy > 0) bgy = 0;
+  if (bgx < gs.cwidth - bg_render.width) bgx = gs.cwidth - bg_render.width;
+  if (bgy < gs.cheight - bg_render.height) bgy = gs.cheight - bg_render.height;
   gs.camera_pos = {x: bgx, y: bgy};
   hidden_context.drawImage(bg_render, bgx, bgy);
 }
 
 function animate_fg(gs: GameState) {
-  let c_sprite = get_sprite('character');
+  const c_sprite = get_sprite('character');
   if (!c_sprite) {
     console.log('bad c_sprite');
     return;
   }
-  var char_bb = get_char_bb(gs);
+  const char_bb = get_char_bb(gs);
 
-  hidden_context.drawImage(c_sprite, char_bb.l, char_bb.t, char_bb.w, char_bb.h, gs.char_pos.x + gs.camera_pos.x, gs.char_pos.y + gs.camera_pos.y, char_bb.w, char_bb.h);
+  hidden_context.drawImage(
+    c_sprite,
+    char_bb.l,
+    char_bb.t,
+    char_bb.w,
+    char_bb.h,
+    gs.char_pos.x + gs.camera_pos.x,
+    gs.char_pos.y + gs.camera_pos.y,
+    char_bb.w,
+    char_bb.h
+  );
   hidden_context.fillStyle = 'white';
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
-  hidden_context.fillText(`x: ${gs.char_pos.x}, y: ${gs.char_pos.y}`, 10, 10)
+  hidden_context.fillText(`x: ${gs.char_pos.x}, y: ${gs.char_pos.y}`, 10, 10);
 }
 
 function update_gs(gs: GameState) {
@@ -152,7 +167,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      y: (gs.char_pos.y -= (gs.speed * gs.ms_passed)),
+      y: (gs.char_pos.y -= gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('a')) {
     gs.walking = true;
@@ -160,7 +175,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      x: (gs.char_pos.x -= (gs.speed * gs.ms_passed)),
+      x: (gs.char_pos.x -= gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('s')) {
     gs.walking = true;
@@ -168,7 +183,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      y: (gs.char_pos.y += (gs.speed * gs.ms_passed)),
+      y: (gs.char_pos.y += gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('d')) {
     gs.walking = true;
@@ -176,14 +191,13 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      x: (gs.char_pos.x += (gs.speed * gs.ms_passed)),
+      x: (gs.char_pos.x += gs.speed * gs.ms_passed),
     };
   } else {
     gs.speed = 0;
     gs.walking = false;
   }
 }
-
 
 function init() {
   console.log('Initializing...');

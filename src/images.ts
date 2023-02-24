@@ -1,4 +1,4 @@
-import {Sprite, GameState} from 'types';
+import {Sprite} from 'types';
 
 let images_needed = 0;
 let images_loaded = 0;
@@ -7,11 +7,20 @@ const sprite_size = 16;
 const images: {[key in Sprite]?: HTMLImageElement} = {};
 let _callback: CallableFunction;
 
-export function draw_sprite_map(sprite: Sprite, map: string, overlay: HTMLCanvasElement | undefined = undefined): HTMLCanvasElement | undefined {
+export function draw_sprite_map(
+  sprite: Sprite,
+  map: string,
+  overlay: HTMLCanvasElement | undefined = undefined
+): HTMLCanvasElement | undefined {
   const sprite_map = get_sprite(sprite);
   if (!sprite_map) return;
 
-  const lines = map.split('\n').map(x => x.trim());
+  let lines;
+  if (!overlay) {
+    lines = map.split('\n').map(x => x.trim());
+  } else {
+    lines = map.split('\n');
+  }
   if (
     lines.length > 0 &&
     lines[0].trim().length === 0 &&
@@ -21,22 +30,25 @@ export function draw_sprite_map(sprite: Sprite, map: string, overlay: HTMLCanvas
     lines.shift();
   }
 
-  let map_width = lines[0].length * sprite_size / 2;
-  let map_height = lines.length * sprite_size;
+  const map_width = (lines[0].length * sprite_size) / 2;
+  const map_height = lines.length * sprite_size;
 
   let canvas;
+  let ctx;
   if (overlay) {
     canvas = overlay;
-    if (overlay.width != map_width || overlay.height != map_height) {
+    if (overlay.width !== map_width || overlay.height !== map_height) {
       console.log('Overlay size mismatch', sprite);
       return;
     }
+    ctx = canvas.getContext('2d');
   } else {
     canvas = document.createElement('canvas');
+    canvas.width = map_width;
+    canvas.height = map_height;
+    ctx = canvas.getContext('2d');
   }
-  canvas.width = map_width;
-  canvas.height = map_height;
-  const ctx = canvas.getContext('2d');
+
   if (!ctx) {
     console.log('bad context');
     return;
@@ -60,7 +72,7 @@ export function draw_sprite_map(sprite: Sprite, map: string, overlay: HTMLCanvas
       y_char -= 65;
       const sx = x_char * sprite_size;
       const sy = y_char * sprite_size;
-      const dx = ci / 2 * sprite_size;
+      const dx = (ci / 2) * sprite_size;
       const dy = li * sprite_size;
       ctx.drawImage(sprite_map, sx, sy, 16, 16, dx, dy, 16, 16);
     }

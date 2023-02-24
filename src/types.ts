@@ -7,7 +7,7 @@ export type CopyBounds = {
   t: number;
   w: number;
   h: number;
-}
+};
 
 export enum Direction {
   South,
@@ -15,6 +15,12 @@ export enum Direction {
   North,
   West,
 }
+
+export type SpriteDef = {
+  sprite: Sprite;
+  x: number;
+  y: number;
+};
 
 export type GameState = {
   ticks: number;

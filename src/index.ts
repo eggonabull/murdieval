@@ -120,11 +120,14 @@ function get_char_bb(gs: GameState): CopyBounds {
 }
 
 function animate_bg(gs: GameState) {
-  let bgx = gs.cwidth-(gs.char_pos.x);
-  let bgy = gs.cheight-(gs.char_pos.y);
+  let bgx = gs.cwidth/2-(gs.char_pos.x);
+  let bgy = gs.cheight/2-(gs.char_pos.y);
+  if(bgx > 0) bgx = 0;
+  if(bgy > 0) bgy = 0;
+  if(bgx < gs.cwidth - bg_render.width) bgx = gs.cwidth - bg_render.width;
+  if(bgy < gs.cheight - bg_render.height) bgy = gs.cheight - bg_render.height;
+  gs.camera_pos = {x: bgx, y: bgy};
   hidden_context.drawImage(bg_render, bgx, bgy);
-  // gs.cwidth  gs.char_pos.x
-  // gs.char_pos.y
 }
 
 function animate_fg(gs: GameState) {
@@ -135,9 +138,11 @@ function animate_fg(gs: GameState) {
   }
   var char_bb = get_char_bb(gs);
 
-  hidden_context.drawImage(c_sprite, char_bb.l, char_bb.t, char_bb.w, char_bb.h, gs.cwidth / 2, gs.cheight / 2, 16, 32);
-  // const cimg = get_char_img(gs);
-  // fgmgr.drawSpriteMap('character', cimg, gs);
+  hidden_context.drawImage(c_sprite, char_bb.l, char_bb.t, char_bb.w, char_bb.h, gs.char_pos.x + gs.camera_pos.x, gs.char_pos.y + gs.camera_pos.y, char_bb.w, char_bb.h);
+  hidden_context.fillStyle = 'white';
+  hidden_context.fillRect(0, 0, 400, 20);
+  hidden_context.fillStyle = 'black';
+  hidden_context.fillText(`x: ${gs.char_pos.x}, y: ${gs.char_pos.y}`, 10, 10)
 }
 
 function update_gs(gs: GameState) {

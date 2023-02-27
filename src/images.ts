@@ -1,4 +1,4 @@
-import {Sprite} from 'types';
+import {Layer, Sprite, DrawInstruction} from 'types';
 
 let images_needed = 0;
 let images_loaded = 0;
@@ -78,6 +78,31 @@ export function draw_sprite_map(
     }
   }
   return canvas;
+}
+
+function draw_instruction(target: HTMLCanvasElement, instruction: DrawInstruction) {
+  const sprite = get_sprite(instruction.def.sprite);
+  if (!sprite) return;
+
+  const ctx = target.getContext('2d');
+  if (!ctx) return;
+
+  const {x, y} = instruction.pos;
+  if (instruction.def.copy_bound) {
+    const {l, t, w, h} = instruction.def.copy_bound;
+    ctx.drawImage(sprite, l, t, w, h, x, y, w, h);
+  } else if (instruction.def.map) {
+    const rendered = draw_sprite_map(instruction.def.sprite, instruction.def.map);
+    if (rendered) {
+      ctx.drawImage(rendered, x * 16, y * 16);
+    }
+  }
+}
+
+export function draw_layer(target: HTMLCanvasElement, layer: Layer) {
+  for (const instruction of layer) {
+    draw_instruction(target, instruction);
+  }
 }
 
 function image_loaded(this: GlobalEventHandlers, ev: Event) {

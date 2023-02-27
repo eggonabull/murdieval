@@ -1,5 +1,5 @@
-import {load_sprites, draw_sprite_map, get_sprite} from './images';
-import {layer0, layer0Sprite} from 'background';
+import {load_sprites, draw_sprite_map, get_sprite, draw_layer} from './images';
+import {layer0, layer0Sprite, layer1} from 'background';
 import {GameState, Direction, CopyBounds} from './types';
 
 let hidden_canvas: HTMLCanvasElement;
@@ -66,6 +66,7 @@ function begin() {
     return;
   }
   bg_render = bg_sprite_map;
+  draw_layer(bg_render, layer1);
   window.requestAnimationFrame(gameLoop);
 }
 
@@ -75,8 +76,6 @@ function gameLoop(timestamp: DOMHighResTimeStamp) {
   if (gs.ms_passed > 10) {
     gs.ticks += 1;
     old_timestamp = timestamp;
-  } else {
-    return;
   }
   update_gs(gs);
   animate_bg(gs);
@@ -154,6 +153,7 @@ function animate_fg(gs: GameState) {
     char_bb.w,
     char_bb.h
   );
+
   hidden_context.fillStyle = 'white';
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
@@ -167,7 +167,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      y: (gs.char_pos.y -= gs.speed * gs.ms_passed),
+      y: Math.round(gs.char_pos.y -= gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('a')) {
     gs.walking = true;
@@ -175,7 +175,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      x: (gs.char_pos.x -= gs.speed * gs.ms_passed),
+      x: Math.round(gs.char_pos.x -= gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('s')) {
     gs.walking = true;
@@ -183,7 +183,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      y: (gs.char_pos.y += gs.speed * gs.ms_passed),
+      y: Math.round(gs.char_pos.y += gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('d')) {
     gs.walking = true;
@@ -191,12 +191,17 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      x: (gs.char_pos.x += gs.speed * gs.ms_passed),
+      x: Math.round(gs.char_pos.x += gs.speed * gs.ms_passed),
     };
   } else {
     gs.speed = 0;
     gs.walking = false;
   }
+
+  if (gs.char_pos.x < 0) gs.char_pos.x = 0;
+  if (gs.char_pos.y < 0) gs.char_pos.y = 0;
+  if (gs.char_pos.x > bg_render.width - 16) gs.char_pos.x = bg_render.width - 16;
+  if (gs.char_pos.y > bg_render.height - 32) gs.char_pos.y = bg_render.height - 32;
 }
 
 function init() {

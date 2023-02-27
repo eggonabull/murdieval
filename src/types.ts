@@ -2,12 +2,27 @@ export type Sprite = 'overworld' | 'character';
 
 export type Position = {x: number; y: number};
 
+export type SpriteMapStr = string;
+
 export type CopyBounds = {
   l: number;
   t: number;
   w: number;
   h: number;
 };
+
+export type SpriteSourceDef = {
+  sprite: Sprite;
+  copy_bound?: CopyBounds;
+  map?: SpriteMapStr;
+};
+
+export type DrawInstruction = {
+  def: SpriteSourceDef;
+  pos: Position;
+};
+
+export type Layer = DrawInstruction[];
 
 export enum Direction {
   South,

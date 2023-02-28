@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <img id="img" style="position: absolute; width: 100%" src="src/zelda-like-tilesets-and-sprites/Overworld.png">
+        <canvas id="overlay_canvas">
+            Your browser does not support the HTML5 canvas tag.
+        </canvas>
+        <div id="charcode" style="font-size: larger; position: absolute; bottom: 10px;"></div>
+    </body>
+    <script>
+        var img = document.getElementById("img");
+
+        var canvas = document.getElementById("overlay_canvas");
+        var ctx;
+        
+        img.addEventListener("load", function() {
+            canvas.style.position = "absolute";
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            canvas.style.zIndex = 1;
+            canvas.style.pointerEvents = "none";
+            canvas.style.margin = img.margin;
+            canvas.style.padding = img.padding;
+            canvas.style.border = img.border;
+            canvas.style.width = "100%";
+            //canvas.style.height = img.height;
+            //canvas.style.left = img.offsetLeft;
+            canvas.style.top = img.offsetTop;
+            
+            ctx = canvas.getContext("2d");
+        });
+        
+        img.addEventListener("click", function(ev) {
+            var x = (ev.clientX - ev.target.offsetLeft) * img.naturalWidth / img.width;
+            var y = (ev.clientY - ev.target.offsetTop) * img.naturalHeight / img.height;
+            console.log(ev.clientX, ev.clientY, ev.target.offsetLeft, ev.target.offsetTop, 'x', x, 'y', y, img.width, img.height, img.naturalWidth, img.naturalHeight);
+            var factor = 16 * img.width / img.naturalWidth;
+            var xLetter = Math.floor(x / 16) + 65;
+            if (xLetter > 90) {
+                xLetter += 6;
+            }
+            var yLetter = Math.floor(y / 16) + 65;
+            if (yLetter > 90) {
+                yLetter += 6;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.rect(Math.floor(x / 16) * 16, Math.floor(y / 16) * 16, 16, 16);
+            ctx.strokeStyle = "red";
+            ctx.stroke();
+
+            document.getElementById("charcode").textContent = String.fromCharCode(yLetter) + String.fromCharCode(xLetter)
+        });
+    </script>
+</html>

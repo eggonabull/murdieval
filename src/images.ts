@@ -63,10 +63,10 @@ export function draw_sprite_map(
         continue;
       }
       if (x_char >= 97) {
-        x_char -= 7;
+        x_char -= 6;
       }
       if (y_char >= 97) {
-        y_char -= 7;
+        y_char -= 6;
       }
       x_char -= 65;
       y_char -= 65;

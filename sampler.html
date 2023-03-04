@@ -14,7 +14,7 @@
 
         var canvas = document.getElementById("overlay_canvas");
         var ctx;
-        
+
         img.addEventListener("load", function() {
             canvas.style.position = "absolute";
             canvas.width = img.naturalWidth;
@@ -28,10 +28,9 @@
             //canvas.style.height = img.height;
             //canvas.style.left = img.offsetLeft;
             canvas.style.top = img.offsetTop;
-            
             ctx = canvas.getContext("2d");
         });
-        
+
         img.addEventListener("click", function(ev) {
             var x = (ev.clientX - ev.target.offsetLeft) * img.naturalWidth / img.width;
             var y = (ev.clientY - ev.target.offsetTop) * img.naturalHeight / img.height;

@@ -1,8 +1,7 @@
-import {Layer, Sprite, DrawInstruction} from 'types';
+import {Layer, Sprite, DrawInstruction, sprite_cell_size} from 'types';
 
 let images_needed = 0;
 let images_loaded = 0;
-const sprite_size = 16;
 
 const images: {[key in Sprite]?: HTMLImageElement} = {};
 let _callback: CallableFunction;
@@ -10,28 +9,37 @@ let _callback: CallableFunction;
 export function draw_sprite_map(
   sprite: Sprite,
   map: string,
-  overlay: HTMLCanvasElement | undefined = undefined
+  overlay: HTMLCanvasElement | undefined = undefined,
+  width: number | undefined = undefined,
 ): HTMLCanvasElement | undefined {
   const sprite_map = get_sprite(sprite);
   if (!sprite_map) return;
 
-  let lines;
-  if (!overlay) {
-    lines = map.split('\n').map(x => x.trim());
-  } else {
-    lines = map.split('\n');
-  }
+  let lines = map.split('\n');
+
   if (
     lines.length > 0 &&
-    lines[0].trim().length === 0 &&
-    lines[lines.length - 1].trim().length === 0
+    lines[0].length === 0 &&
+    lines[lines.length - 1].length === 0
   ) {
     lines.pop();
     lines.shift();
   }
 
-  const map_width = (lines[0].length * sprite_size) / 2;
-  const map_height = lines.length * sprite_size;
+  console.log("lines[0]", lines[0])
+  if (lines[0][0] === ' ') {
+    for (let line = 0; line < lines.length; line += 1) {
+      let leading_spaces = lines[0].match(/^ +(?:\w)/);
+      if (leading_spaces && leading_spaces.length) {
+        var lead_trim = leading_spaces[0].length;
+        console.log(line, lines[line], lines[line].substring(lead_trim))
+        lines[line] = lines[line].substring(lead_trim);
+      }
+    }
+  }
+
+  const map_width = width || (lines[0].length * sprite_cell_size) / 2;
+  const map_height = lines.length * sprite_cell_size;
 
   let canvas;
   let ctx;
@@ -70,11 +78,11 @@ export function draw_sprite_map(
       }
       x_char -= 65;
       y_char -= 65;
-      const sx = x_char * sprite_size;
-      const sy = y_char * sprite_size;
-      const dx = (ci / 2) * sprite_size;
-      const dy = li * sprite_size;
-      ctx.drawImage(sprite_map, sx, sy, 16, 16, dx, dy, 16, 16);
+      const sx = x_char * sprite_cell_size;
+      const sy = y_char * sprite_cell_size;
+      const dx = (ci / 2) * sprite_cell_size;
+      const dy = li * sprite_cell_size;
+      ctx.drawImage(sprite_map, sx, sy, sprite_cell_size, sprite_cell_size, dx, dy, sprite_cell_size, sprite_cell_size);
     }
   }
   return canvas;
@@ -94,12 +102,12 @@ function draw_instruction(target: HTMLCanvasElement, instruction: DrawInstructio
   } else if (instruction.def.map) {
     const rendered = draw_sprite_map(instruction.def.sprite, instruction.def.map);
     if (rendered) {
-      ctx.drawImage(rendered, x * 16, y * 16);
+      ctx.drawImage(rendered, x * sprite_cell_size, y * sprite_cell_size);
     }
   }
 }
 
-export function draw_layer(target: HTMLCanvasElement, layer: Layer) {
+export function draw_layer(layer: Layer, target: HTMLCanvasElement) {
   for (const instruction of layer) {
     draw_instruction(target, instruction);
   }

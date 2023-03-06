@@ -1,10 +1,11 @@
-import {load_sprites, draw_sprite_map, get_sprite, draw_layer} from './images';
-import {layer0, layer0Sprite, layer1} from 'background';
+import {load_sprites, draw_sprite_map, get_sprite} from './images';
+import {layer0Sprite, layer0Map, layer1, get_ground_info, draw_over_player, layer1flattened, blocks_player} from 'background';
 import {GameState, Direction, CopyBounds} from './types';
 
 let hidden_canvas: HTMLCanvasElement;
 let hidden_context: CanvasRenderingContext2D;
 let bg_render: HTMLCanvasElement;
+let fg_render: HTMLCanvasElement;
 let game_canvas_ctx: CanvasRenderingContext2D;
 let old_timestamp = 0;
 let frame_requested = false;
@@ -14,7 +15,7 @@ const gs: GameState = {
   cwidth: 0,
   cheight: 0,
   camera_pos: {x: 0, y: 0},
-  char_pos: {x: 512, y: 384},
+  char_pos: {x: 32, y: 32},
   last_pos: {x: 512, y: 384},
   ms_passed: 0,
   direction: Direction.North,
@@ -59,14 +60,23 @@ function begin() {
     return;
   }
   hidden_context = hidden_ctx;
-  const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0);
 
+  const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0Map);
   if (!bg_sprite_map) {
     console.log('bad bg_sprite_map');
     return;
   }
   bg_render = bg_sprite_map;
-  draw_layer(bg_render, layer1);
+
+  console.log("layer1flattened", layer1flattened)
+  const fg_sprite_map = draw_sprite_map(layer0Sprite, layer1flattened, undefined, bg_sprite_map.width);
+  if (!fg_sprite_map) {
+    console.log('bad fg_sprite_map');
+    return;
+  }
+  fg_render = fg_sprite_map;
+  //console.log("fg_render", fg_render)
+
   window.requestAnimationFrame(gameLoop);
 }
 
@@ -132,6 +142,7 @@ function animate_bg(gs: GameState) {
   if (bgy < gs.cheight - bg_render.height) bgy = gs.cheight - bg_render.height;
   gs.camera_pos = {x: bgx, y: bgy};
   hidden_context.drawImage(bg_render, bgx, bgy);
+  hidden_context.drawImage(fg_render, bgx, bgy);
 }
 
 function animate_fg(gs: GameState) {
@@ -157,17 +168,30 @@ function animate_fg(gs: GameState) {
   hidden_context.fillStyle = 'white';
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
-  hidden_context.fillText(`x: ${gs.char_pos.x}, y: ${gs.char_pos.y}`, 10, 10);
+  let ginfo = get_ground_info(gs.char_pos);
+
+  if (ginfo.length > 1 && draw_over_player.includes(ginfo[1])) {
+    let sx = Math.floor((gs.char_pos.x) / 16) * 16;
+    let sy = Math.floor((gs.char_pos.y) / 16 + 1) * 16;
+    // hidden_context.beginPath();
+    // hidden_context.rect(sx + gs.camera_pos.x - 16, sy + gs.camera_pos.y, 48, 32);
+    // hidden_context.stroke();
+    hidden_context.drawImage(fg_render, sx - 16, sy, 48, 32, sx + gs.camera_pos.x - 16, sy + gs.camera_pos.y, 48, 32);
+  }
+
+  // console.log("ginfo", ginfo);
+  hidden_context.fillText(`${gs.char_pos.x}, ${gs.char_pos.y} (${Math.floor(gs.char_pos.x / 16)}, ${Math.floor((gs.char_pos.y + 16) / 16)}), ${ginfo.join(" ")}`, 10, 10);
 }
 
 function update_gs(gs: GameState) {
+  const last_pos = gs.char_pos;
   if (is_key_down('w')) {
     gs.walking = true;
     gs.direction = Direction.North;
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      y: Math.round(gs.char_pos.y -= gs.speed * gs.ms_passed),
+      y: Math.round(gs.char_pos.y - gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('a')) {
     gs.walking = true;
@@ -175,7 +199,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      x: Math.round(gs.char_pos.x -= gs.speed * gs.ms_passed),
+      x: Math.round(gs.char_pos.x - gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('s')) {
     gs.walking = true;
@@ -183,7 +207,7 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      y: Math.round(gs.char_pos.y += gs.speed * gs.ms_passed),
+      y: Math.round(gs.char_pos.y + gs.speed * gs.ms_passed),
     };
   } else if (is_key_down('d')) {
     gs.walking = true;
@@ -191,11 +215,15 @@ function update_gs(gs: GameState) {
     gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
     gs.char_pos = {
       ...gs.char_pos,
-      x: Math.round(gs.char_pos.x += gs.speed * gs.ms_passed),
+      x: Math.round(gs.char_pos.x + gs.speed * gs.ms_passed),
     };
   } else {
     gs.speed = 0;
     gs.walking = false;
+  }
+
+  if (get_ground_info(gs.char_pos).some(x => blocks_player.includes(x))) {
+    gs.char_pos = last_pos;
   }
 
   if (gs.char_pos.x < 0) gs.char_pos.x = 0;

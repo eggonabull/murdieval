@@ -1,5 +1,7 @@
 export type Sprite = 'overworld' | 'character';
 
+export const sprite_cell_size = 16;
+
 export type Position = {x: number; y: number};
 
 export type SpriteMapStr = string;

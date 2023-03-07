@@ -168,11 +168,12 @@ function animate_fg(gs: GameState) {
   hidden_context.fillStyle = 'white';
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
+  //let head_ginfo = get_ground_info({...gs.char_pos, y: gs.char_pos.y - 16});
   let ginfo = get_ground_info(gs.char_pos);
 
   if (ginfo.length > 1 && draw_over_player.includes(ginfo[1])) {
     let sx = Math.floor((gs.char_pos.x) / 16) * 16;
-    let sy = Math.floor((gs.char_pos.y) / 16 + 1) * 16;
+    let sy = Math.floor((gs.char_pos.y - 12) / 16 + 2) * 16;
     // hidden_context.beginPath();
     // hidden_context.rect(sx + gs.camera_pos.x - 16, sy + gs.camera_pos.y, 48, 32);
     // hidden_context.stroke();

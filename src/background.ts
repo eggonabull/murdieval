@@ -111,13 +111,15 @@ export const shrub: SpriteSourceDef = {
 
 export const draw_over_player = [
     "QF", "QG", "UV", "UW", "AL", "AM",
-    "AN", "AO", "AP", "AG", "AH", "AI", "AJ", "AK"
+    "AN", "AO", "AP", "AG", "AH", "AI", "AJ", "AK",
+    "PC"
 ];
 
 export const blocks_player = [
     "FD", "FE", "FF", // log
     'RF', 'RG', // shrub
     'VV', 'VW', // crate
+    'HD', 'ID', // water
     'BG', 'BH', 'BI', 'BJ', 'BK', // house
     'CG', 'CH', 'CI', 'CJ', 'CK',
     'DG', 'DH', 'DI', 'DJ', 'DK',

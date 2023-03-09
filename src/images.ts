@@ -139,8 +139,8 @@ function load_image(name: Sprite, src: string) {
 
 export function load_sprites(callback: CallableFunction) {
   _callback = callback;
-  load_image('overworld', 'src/zelda-like-tilesets-and-sprites/Overworld.png');
-  load_image('character', 'src/zelda-like-tilesets-and-sprites/character.png');
+  load_image('overworld', 'static/zelda-like-tilesets-and-sprites/Overworld.png');
+  load_image('character', 'static/zelda-like-tilesets-and-sprites/character.png');
 }
 
 export function get_sprite(sprite: Sprite) {

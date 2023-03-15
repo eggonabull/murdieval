@@ -1,12 +1,14 @@
 import os
 
 import openai
-from flask import Flask, redirect, render_template, request, url_for, jsonify, send_file
+from flask import Flask, redirect, render_template, request, url_for, jsonify, send_file, send_from_directory
 
-static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "static")
+here = os.path.dirname(os.path.realpath(__file__))
+static_file_dir = os.path.join(here, "static")
 
-openai.api_key_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "openai_api_key.txt")
-favicon_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "static/favicon.ico")
+openai.api_key_path = os.path.join(here, "openai_api_key.txt")
+favicon_path = os.path.join(here, "static/favicon.ico")
+src_path = os.path.join(here, "src")
 print("favicon", favicon_path)
 
 app = Flask(
@@ -40,6 +42,11 @@ def chat():
 @app.route("/", methods=("GET", "POST"))
 def index():
     return render_template("index.html")
+
+@app.route("/src/<path:filename>", methods=("GET",))
+def src(filename):
+    # Disable this in production
+    return send_from_directory(src_path, filename)
 
 @app.route("/favicon.ico", methods=["GET"])
 def favicon():

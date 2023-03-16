@@ -43,6 +43,10 @@ def chat():
 def index():
     return render_template("index.html")
 
+@app.route("/sampler", methods=("GET", "POST"))
+def index():
+    return render_template("sampler.html")
+
 @app.route("/src/<path:filename>", methods=("GET",))
 def src(filename):
     # Disable this in production

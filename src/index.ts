@@ -43,6 +43,7 @@ function begin() {
   const game_canvas = document.getElementById(
     'game_canvas'
   ) as HTMLCanvasElement;
+  
   const can_ctx = game_canvas.getContext('2d');
   if (can_ctx === null) {
     console.log('bad bgctx');
@@ -60,6 +61,15 @@ function begin() {
     return;
   }
   hidden_context = hidden_ctx;
+
+
+  window.onresize = function () {
+    game_canvas.width = window.innerWidth / 2 * 4 / 3;
+    game_canvas.height = window.innerWidth / 2;
+    game_canvas.style.width = window.innerWidth + "px";
+    game_canvas.style.height = Math.round(window.innerWidth) + "px";
+  }
+  window.onresize(new UIEvent('resize'));
 
   const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0Map);
   if (!bg_sprite_map) {

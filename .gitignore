@@ -6,6 +6,7 @@
 .pnp.js
 __pycache__
 *.py[cod]
+venv
 
 # testing
 /coverage

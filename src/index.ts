@@ -53,8 +53,6 @@ function begin() {
   gs.cwidth = game_canvas.width;
   gs.cheight = game_canvas.height;
   hidden_canvas = document.createElement('canvas');
-  hidden_canvas.width = game_canvas.width;
-  hidden_canvas.height = game_canvas.height;
   const hidden_ctx = hidden_canvas.getContext('2d');
   if (!hidden_ctx) {
     console.log('bad context');
@@ -64,10 +62,12 @@ function begin() {
 
 
   window.onresize = function () {
-    game_canvas.width = window.innerWidth / 2 * 4 / 3;
-    game_canvas.height = window.innerWidth / 2;
+    game_canvas.width = (window.innerWidth + window.innerHeight) * 2 / 3;
+    game_canvas.height = (window.innerWidth + window.innerHeight) * 2 / 3;
     game_canvas.style.width = window.innerWidth + "px";
     game_canvas.style.height = Math.round(window.innerWidth) + "px";
+    hidden_canvas.width = 256 * Math.max(Math.round(game_canvas.width / 1024), 1);
+    hidden_canvas.height = 192 * Math.max(Math.round(game_canvas.height / 768), 1);
   }
   window.onresize(new UIEvent('resize'));
 
@@ -99,7 +99,7 @@ function game_loop(timestamp: DOMHighResTimeStamp) {
   update_gs(gs);
   animate_bg(gs);
   animate_fg(gs);
-  game_canvas_ctx.drawImage(hidden_canvas, 0, 0);
+  game_canvas_ctx.drawImage(hidden_canvas, 0, 0, game_canvas_ctx.canvas.width, game_canvas_ctx.canvas.height);
   if (document.hasFocus()) {
     window.requestAnimationFrame(game_loop);
     frame_requested = true;

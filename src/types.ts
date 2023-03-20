@@ -51,4 +51,5 @@ export type GameState = {
   walking: boolean;
   walk_start: number;
   speed: number;
+  frames_wanted: boolean;
 };

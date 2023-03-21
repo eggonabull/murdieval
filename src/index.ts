@@ -1,17 +1,12 @@
 import {load_sprites, draw_sprite_map, get_sprite} from './images';
 import {layer0Sprite, layer0Map, layer1, get_ground_info, draw_over_player, layer1flattened, blocks_player} from 'background';
 import {GameState, Direction, CopyBounds} from './types';
-import {game_loop} from './animation';
-
+import {animate_bg, animate_fg, init_animation} from './animation';
 
 let hidden_canvas: HTMLCanvasElement;
-let hidden_context: CanvasRenderingContext2D;
-let bg_render: HTMLCanvasElement;
-let fg_render: HTMLCanvasElement;
 let game_canvas_ctx: CanvasRenderingContext2D;
 let old_timestamp = 0;
 let frame_requested = false;
-
 
 const gs: GameState = {
   ticks: 0,
@@ -25,9 +20,60 @@ const gs: GameState = {
   walking: false,
   walk_start: 0,
   speed: 0,
-  frames_wanted: false,
+  frames_wanted: true,
 };
 const keyArray: {[key: string]: boolean} = {};
+
+function update_gs(gs: GameState) {
+  const last_pos = gs.char_pos;
+  if (is_key_down('w')) {
+    gs.walking = true;
+    gs.direction = Direction.North;
+    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
+    gs.char_pos = {
+      ...gs.char_pos,
+      y: Math.round(gs.char_pos.y - gs.speed * gs.ms_passed),
+    };
+  } else if (is_key_down('a')) {
+    gs.walking = true;
+    gs.direction = Direction.West;
+    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
+    gs.char_pos = {
+      ...gs.char_pos,
+      x: Math.round(gs.char_pos.x - gs.speed * gs.ms_passed),
+    };
+  } else if (is_key_down('s')) {
+    gs.walking = true;
+    gs.direction = Direction.South;
+    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
+    gs.char_pos = {
+      ...gs.char_pos,
+      y: Math.round(gs.char_pos.y + gs.speed * gs.ms_passed),
+    };
+  } else if (is_key_down('d')) {
+    gs.walking = true;
+    gs.direction = Direction.East;
+    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
+    gs.char_pos = {
+      ...gs.char_pos,
+      x: Math.round(gs.char_pos.x + gs.speed * gs.ms_passed),
+    };
+  } else {
+    gs.speed = 0;
+    gs.walking = false;
+  }
+
+  if (get_ground_info(gs.char_pos).some(x => blocks_player.includes(x))) {
+    gs.char_pos = last_pos;
+  }
+
+  if (gs.char_pos.x < 0) gs.char_pos.x = 0;
+  if (gs.char_pos.y < 0) gs.char_pos.y = 0;
+  // Todo: figure out how to do without bg_render
+  // if (gs.char_pos.x > bg_render.width - 16) gs.char_pos.x = bg_render.width - 16;
+  // if (gs.char_pos.y > bg_render.height - 32) gs.char_pos.y = bg_render.height - 32;
+}
+
 
 window.onfocus = function () {
   if (!frame_requested) {
@@ -57,6 +103,23 @@ function is_key_down(key: string) {
   return keyArray[key];
 }
 
+function game_loop(timestamp: DOMHighResTimeStamp) {
+  frame_requested = false;
+  gs.ms_passed = timestamp - old_timestamp;
+  if (gs.ms_passed > 10) {
+    gs.ticks += 1;
+    old_timestamp = timestamp;
+  }
+  update_gs(gs);
+  animate_bg(gs);
+  animate_fg(gs);
+  game_canvas_ctx.drawImage(hidden_canvas, 0, 0, game_canvas_ctx.canvas.width, game_canvas_ctx.canvas.height);
+  if (gs.frames_wanted) {
+    window.requestAnimationFrame(game_loop);
+    frame_requested = true;
+  }
+}
+
 function begin() {
   document.onkeydown = on_key_down;
   document.onkeyup = on_key_up;
@@ -73,38 +136,8 @@ function begin() {
   game_canvas_ctx = can_ctx;
   gs.cwidth = game_canvas.width;
   gs.cheight = game_canvas.height;
-  hidden_canvas = document.createElement('canvas');
-  const hidden_ctx = hidden_canvas.getContext('2d');
-  if (!hidden_ctx) {
-    console.log('bad context');
-    return;
-  }
-  hidden_context = hidden_ctx;
 
-
-  window.onresize = function () {
-    game_canvas.width = (window.innerWidth + window.innerHeight) * 2 / 3;
-    game_canvas.height = (window.innerWidth + window.innerHeight) * 2 / 3;
-    game_canvas.style.width = window.innerWidth + "px";
-    game_canvas.style.height = Math.round(window.innerWidth) + "px";
-    hidden_canvas.width = 256 * Math.max(Math.round(game_canvas.width / 1024), 1);
-    hidden_canvas.height = 192 * Math.max(Math.round(game_canvas.height / 768), 1);
-  }
-  window.onresize(new UIEvent('resize'));
-
-  const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0Map);
-  if (!bg_sprite_map) {
-    console.log('bad bg_sprite_map');
-    return;
-  }
-  bg_render = bg_sprite_map;
-
-  const fg_sprite_map = draw_sprite_map(layer0Sprite, layer1flattened, undefined, bg_sprite_map.width);
-  if (!fg_sprite_map) {
-    console.log('bad fg_sprite_map');
-    return;
-  }
-  fg_render = fg_sprite_map;
+  init_animation(game_canvas);
   //console.log("fg_render", fg_render)
 
   window.requestAnimationFrame(game_loop);

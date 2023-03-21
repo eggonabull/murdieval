@@ -10,26 +10,6 @@ let game_canvas_ctx: CanvasRenderingContext2D;
 let old_timestamp = 0;
 let frame_requested = false;
 
-
-
-
-export function game_loop(gs: GameState, timestamp: DOMHighResTimeStamp) {
-  frame_requested = false;
-  gs.ms_passed = timestamp - old_timestamp;
-  if (gs.ms_passed > 10) {
-    gs.ticks += 1;
-    old_timestamp = timestamp;
-  }
-  update_gs(gs);
-  animate_bg(gs);
-  animate_fg(gs);
-  game_canvas_ctx.drawImage(hidden_canvas, 0, 0, game_canvas_ctx.canvas.width, game_canvas_ctx.canvas.height);
-  if (document.hasFocus()) {
-    window.requestAnimationFrame(function (ts) { game_loop(gs, ts); });
-    frame_requested = true;
-  }
-}
-
 function get_char_bb(gs: GameState): CopyBounds {
   const w = 16;
   const h = 32;
@@ -50,7 +30,41 @@ function get_char_bb(gs: GameState): CopyBounds {
   return {l, t, w, h};
 }
 
-function animate_bg(gs: GameState) {
+export function init_animation(game_canvas: HTMLCanvasElement) {
+  hidden_canvas = document.createElement('canvas');
+  const hidden_ctx = hidden_canvas.getContext('2d');
+  if (!hidden_ctx) {
+    console.log('bad context');
+    return;
+  }
+  hidden_context = hidden_ctx;
+
+  window.onresize = function () {
+    game_canvas.width = (window.innerWidth + window.innerHeight) * 2 / 3;
+    game_canvas.height = (window.innerWidth + window.innerHeight) * 2 / 3;
+    game_canvas.style.width = window.innerWidth + "px";
+    game_canvas.style.height = Math.round(window.innerWidth) + "px";
+    hidden_canvas.width = 256 * Math.max(Math.round(game_canvas.width / 1024), 1);
+    hidden_canvas.height = 192 * Math.max(Math.round(game_canvas.height / 768), 1);
+  }
+  window.onresize(new UIEvent('resize'));
+
+  const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0Map);
+  if (!bg_sprite_map) {
+    console.log('bad bg_sprite_map');
+    return;
+  }
+  bg_render = bg_sprite_map;
+
+  const fg_sprite_map = draw_sprite_map(layer0Sprite, layer1flattened, undefined, bg_sprite_map.width);
+  if (!fg_sprite_map) {
+    console.log('bad fg_sprite_map');
+    return;
+  }
+  fg_render = fg_sprite_map;
+}
+
+export function animate_bg(gs: GameState) {
   let bgx = gs.cwidth / 2 - gs.char_pos.x;
   let bgy = gs.cheight / 2 - (gs.char_pos.y);
   if (bgx > 0) bgx = 0;
@@ -62,7 +76,7 @@ function animate_bg(gs: GameState) {
   hidden_context.drawImage(fg_render, bgx, bgy);
 }
 
-function animate_fg(gs: GameState) {
+export function animate_fg(gs: GameState) {
   const c_sprite = get_sprite('character');
   if (!c_sprite) {
     console.log('bad c_sprite');
@@ -101,53 +115,4 @@ function animate_fg(gs: GameState) {
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
   hidden_context.fillText(`${gs.char_pos.x}, ${gs.char_pos.y} (${Math.floor(gs.char_pos.x / 16)}, ${Math.floor((gs.char_pos.y + 16) / 16)}), ${ginfo.join(" ")}`, 10, 10);
-}
-
-function update_gs(gs: GameState) {
-  const last_pos = gs.char_pos;
-  if (is_key_down('w')) {
-    gs.walking = true;
-    gs.direction = Direction.North;
-    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
-    gs.char_pos = {
-      ...gs.char_pos,
-      y: Math.round(gs.char_pos.y - gs.speed * gs.ms_passed),
-    };
-  } else if (is_key_down('a')) {
-    gs.walking = true;
-    gs.direction = Direction.West;
-    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
-    gs.char_pos = {
-      ...gs.char_pos,
-      x: Math.round(gs.char_pos.x - gs.speed * gs.ms_passed),
-    };
-  } else if (is_key_down('s')) {
-    gs.walking = true;
-    gs.direction = Direction.South;
-    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
-    gs.char_pos = {
-      ...gs.char_pos,
-      y: Math.round(gs.char_pos.y + gs.speed * gs.ms_passed),
-    };
-  } else if (is_key_down('d')) {
-    gs.walking = true;
-    gs.direction = Direction.East;
-    gs.speed = gs.speed < 0.05 ? 0.05 : gs.speed >= 0.2 ? 0.2 : gs.speed + 0.01;
-    gs.char_pos = {
-      ...gs.char_pos,
-      x: Math.round(gs.char_pos.x + gs.speed * gs.ms_passed),
-    };
-  } else {
-    gs.speed = 0;
-    gs.walking = false;
-  }
-
-  if (get_ground_info(gs.char_pos).some(x => blocks_player.includes(x))) {
-    gs.char_pos = last_pos;
-  }
-
-  if (gs.char_pos.x < 0) gs.char_pos.x = 0;
-  if (gs.char_pos.y < 0) gs.char_pos.y = 0;
-  if (gs.char_pos.x > bg_render.width - 16) gs.char_pos.x = bg_render.width - 16;
-  if (gs.char_pos.y > bg_render.height - 32) gs.char_pos.y = bg_render.height - 32;
 }

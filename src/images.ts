@@ -10,12 +10,12 @@ export function draw_sprite_map(
   sprite: Sprite,
   map: string,
   overlay: HTMLCanvasElement | undefined = undefined,
-  width: number | undefined = undefined,
+  width: number | undefined = undefined
 ): HTMLCanvasElement | undefined {
   const sprite_map = get_sprite(sprite);
   if (!sprite_map) return;
 
-  let lines = map.split('\n');
+  const lines = map.split('\n');
 
   if (
     lines.length > 0 &&
@@ -28,9 +28,16 @@ export function draw_sprite_map(
 
   const map_width = width || (lines[0].length * sprite_cell_size) / 2;
   const map_height = lines.length * sprite_cell_size;
-  console.log("map_width", map_width, "map_height", map_height, "lines.length", lines.length)
-  for(var i = 0; i < lines.length; i++) {
-    console.log("line", i, "length", lines[i].length, "line", lines[i])
+  console.log(
+    'map_width',
+    map_width,
+    'map_height',
+    map_height,
+    'lines.length',
+    lines.length
+  );
+  for (let i = 0; i < lines.length; i++) {
+    console.log('line', i, 'length', lines[i].length, 'line', lines[i]);
   }
 
   let canvas;
@@ -74,8 +81,18 @@ export function draw_sprite_map(
       const sy = y_char * sprite_cell_size;
       const dx = (ci / 2) * sprite_cell_size;
       const dy = li * sprite_cell_size;
-      ctx.drawImage(sprite_map, sx, sy, sprite_cell_size, sprite_cell_size, dx, dy, sprite_cell_size, sprite_cell_size);
-      
+      ctx.drawImage(
+        sprite_map,
+        sx,
+        sy,
+        sprite_cell_size,
+        sprite_cell_size,
+        dx,
+        dy,
+        sprite_cell_size,
+        sprite_cell_size
+      );
+
       // debug stuff
       // ctx.fillStyle = `rgba(${Math.round(255 / 1024 * dx * 19) % 255}, ${Math.round(255 / 768 * dy * 19) % 255}, 255, 0.5)`;
       // ctx.beginPath();
@@ -93,7 +110,10 @@ export function draw_sprite_map(
   return canvas;
 }
 
-function draw_instruction(target: HTMLCanvasElement, instruction: DrawInstruction) {
+function draw_instruction(
+  target: HTMLCanvasElement,
+  instruction: DrawInstruction
+) {
   const sprite = get_sprite(instruction.def.sprite);
   if (!sprite) return;
 
@@ -105,7 +125,10 @@ function draw_instruction(target: HTMLCanvasElement, instruction: DrawInstructio
     const {l, t, w, h} = instruction.def.copy_bound;
     ctx.drawImage(sprite, l, t, w, h, x, y, w, h);
   } else if (instruction.def.map) {
-    const rendered = draw_sprite_map(instruction.def.sprite, instruction.def.map);
+    const rendered = draw_sprite_map(
+      instruction.def.sprite,
+      instruction.def.map
+    );
     if (rendered) {
       ctx.drawImage(rendered, x * sprite_cell_size, y * sprite_cell_size);
     }
@@ -144,8 +167,14 @@ function load_image(name: Sprite, src: string) {
 
 export function load_sprites(callback: CallableFunction) {
   _callback = callback;
-  load_image('overworld', 'static/zelda-like-tilesets-and-sprites/Overworld.png');
-  load_image('character', 'static/zelda-like-tilesets-and-sprites/character.png');
+  load_image(
+    'overworld',
+    'static/zelda-like-tilesets-and-sprites/Overworld.png'
+  );
+  load_image(
+    'character',
+    'static/zelda-like-tilesets-and-sprites/character.png'
+  );
 }
 
 export function get_sprite(sprite: Sprite) {

@@ -1,9 +1,13 @@
-import {load_sprites, draw_sprite_map, get_sprite} from './images';
-import {layer0Sprite, layer0Map, layer1, get_ground_info, draw_over_player, layer1flattened, blocks_player} from 'background';
-import {GameState, Direction, CopyBounds} from './types';
-import {animate_bg, animate_fg, init_animation} from './animation';
+import {load_sprites} from './images';
+import {get_ground_info, blocks_player} from 'background';
+import {GameState, Direction} from './types';
+import {
+  animate_bg,
+  animate_fg,
+  init_animation,
+  final_animation_step,
+} from './animation';
 
-let hidden_canvas: HTMLCanvasElement;
 let game_canvas_ctx: CanvasRenderingContext2D;
 let old_timestamp = 0;
 let frame_requested = false;
@@ -74,7 +78,6 @@ function update_gs(gs: GameState) {
   // if (gs.char_pos.y > bg_render.height - 32) gs.char_pos.y = bg_render.height - 32;
 }
 
-
 window.onfocus = function () {
   if (!frame_requested) {
     frame_requested = true;
@@ -113,7 +116,7 @@ function game_loop(timestamp: DOMHighResTimeStamp) {
   update_gs(gs);
   animate_bg(gs);
   animate_fg(gs);
-  game_canvas_ctx.drawImage(hidden_canvas, 0, 0, game_canvas_ctx.canvas.width, game_canvas_ctx.canvas.height);
+  final_animation_step(game_canvas_ctx);
   if (gs.frames_wanted) {
     window.requestAnimationFrame(game_loop);
     frame_requested = true;
@@ -127,7 +130,7 @@ function begin() {
   const game_canvas = document.getElementById(
     'game_canvas'
   ) as HTMLCanvasElement;
-  
+
   const can_ctx = game_canvas.getContext('2d');
   if (can_ctx === null) {
     console.log('bad bgctx');

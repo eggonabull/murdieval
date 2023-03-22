@@ -1,14 +1,17 @@
-import {load_sprites, draw_sprite_map, get_sprite} from './images';
-import {layer0Sprite, layer0Map, layer1, get_ground_info, draw_over_player, layer1flattened, blocks_player} from 'background';
+import {draw_sprite_map, get_sprite} from './images';
+import {
+  layer0Sprite,
+  layer0Map,
+  get_ground_info,
+  draw_over_player,
+  layer1flattened
+} from 'background';
 import {GameState, Direction, CopyBounds} from './types';
 
 let hidden_canvas: HTMLCanvasElement;
 let hidden_context: CanvasRenderingContext2D;
 let bg_render: HTMLCanvasElement;
 let fg_render: HTMLCanvasElement;
-let game_canvas_ctx: CanvasRenderingContext2D;
-let old_timestamp = 0;
-let frame_requested = false;
 
 function get_char_bb(gs: GameState): CopyBounds {
   const w = 16;
@@ -115,4 +118,8 @@ export function animate_fg(gs: GameState) {
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
   hidden_context.fillText(`${gs.char_pos.x}, ${gs.char_pos.y} (${Math.floor(gs.char_pos.x / 16)}, ${Math.floor((gs.char_pos.y + 16) / 16)}), ${ginfo.join(" ")}`, 10, 10);
+}
+
+export function final_animation_step(game_canvas_ctx: CanvasRenderingContext2D) {
+  game_canvas_ctx.drawImage(hidden_canvas, 0, 0, game_canvas_ctx.canvas.width, game_canvas_ctx.canvas.height);
 }

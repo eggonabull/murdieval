@@ -59,7 +59,9 @@ function flatten(layer: Layer): SpriteMapStr {
 }
 
 function create_collision_map(layer: Layer): SpriteMapStr[] {
-  const result: SpriteMapStr[] = new Array<SpriteMapStr>(map_width * map_height).fill('  ');
+  const result: SpriteMapStr[] = new Array<SpriteMapStr>(
+    map_width * map_height
+  ).fill('  ');
   for (let i = 0; i < layer.length; i++) {
     const def = layer[i].def;
     if (!def.map) {
@@ -67,7 +69,10 @@ function create_collision_map(layer: Layer): SpriteMapStr[] {
       continue;
     }
     const pos = layer[i].pos;
-    const map = def.map.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+    const map = def.map
+      .split('\n')
+      .map(row => row.trim())
+      .filter(row => row.length > 0);
     for (let y = 0; y < map.length; y++) {
       for (let x = 0; x < map[0].length; x += 2) {
         const char = map[y][x] + map[y][x + 1];
@@ -127,15 +132,17 @@ export const shrub: SpriteSourceDef = {
   `,
 };
 
+// prettier-ignore
 export const draw_over_player = [
   'QF', 'QG', 'UV', 'UW', 'AL', 'AM',
   'AN', 'AO', 'AP', 'AG', 'AH', 'AI', 'AJ', 'AK',
   'PC', 'QA', 'QB',
 ];
 
+// prettier-ignore
 export const blocks_player = [
   // log
-  'FD', 'FE', 'FF', 
+  'FD', 'FE', 'FF',
   // shrub
   'RF', 'RG',
   // crate

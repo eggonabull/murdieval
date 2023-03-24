@@ -4,7 +4,7 @@ import {
   layer0Map,
   get_ground_info,
   draw_over_player,
-  layer1flattened
+  layer1flattened,
 } from 'background';
 import {GameState, Direction, CopyBounds} from './types';
 
@@ -43,13 +43,15 @@ export function init_animation(game_canvas: HTMLCanvasElement) {
   hidden_context = hidden_ctx;
 
   window.onresize = function () {
-    game_canvas.width = (window.innerWidth + window.innerHeight) * 2 / 3;
-    game_canvas.height = (window.innerWidth + window.innerHeight) * 2 / 3;
-    game_canvas.style.width = window.innerWidth + "px";
-    game_canvas.style.height = Math.round(window.innerWidth) + "px";
-    hidden_canvas.width = 256 * Math.max(Math.round(game_canvas.width / 1024), 1);
-    hidden_canvas.height = 192 * Math.max(Math.round(game_canvas.height / 768), 1);
-  }
+    game_canvas.width = ((window.innerWidth + window.innerHeight) * 2) / 3;
+    game_canvas.height = ((window.innerWidth + window.innerHeight) * 2) / 3;
+    game_canvas.style.width = window.innerWidth + 'px';
+    game_canvas.style.height = Math.round(window.innerWidth) + 'px';
+    hidden_canvas.width =
+      256 * Math.max(Math.round(game_canvas.width / 1024), 1);
+    hidden_canvas.height =
+      192 * Math.max(Math.round(game_canvas.height / 768), 1);
+  };
   window.onresize(new UIEvent('resize'));
 
   const bg_sprite_map = draw_sprite_map(layer0Sprite, layer0Map);
@@ -59,7 +61,12 @@ export function init_animation(game_canvas: HTMLCanvasElement) {
   }
   bg_render = bg_sprite_map;
 
-  const fg_sprite_map = draw_sprite_map(layer0Sprite, layer1flattened, undefined, bg_sprite_map.width);
+  const fg_sprite_map = draw_sprite_map(
+    layer0Sprite,
+    layer1flattened,
+    undefined,
+    bg_sprite_map.width
+  );
   if (!fg_sprite_map) {
     console.log('bad fg_sprite_map');
     return;
@@ -69,7 +76,7 @@ export function init_animation(game_canvas: HTMLCanvasElement) {
 
 export function animate_bg(gs: GameState) {
   let bgx = gs.cwidth / 2 - gs.char_pos.x;
-  let bgy = gs.cheight / 2 - (gs.char_pos.y);
+  let bgy = gs.cheight / 2 - gs.char_pos.y;
   if (bgx > 0) bgx = 0;
   if (bgy > 0) bgy = 0;
   if (bgx < gs.cwidth - bg_render.width) bgx = gs.cwidth - bg_render.width;
@@ -99,27 +106,54 @@ export function animate_fg(gs: GameState) {
     char_bb.h
   );
 
-  
   //let head_ginfo = get_ground_info({...gs.char_pos, y: gs.char_pos.y - 16});
-  let ginfo = get_ground_info(gs.char_pos);
+  const ginfo = get_ground_info(gs.char_pos);
 
   if (ginfo.length > 1 && draw_over_player.includes(ginfo[1])) {
-    let sx = Math.floor((gs.char_pos.x) / 16) * 16;
-    let sy = Math.floor((gs.char_pos.y - 8) / 16 + 2) * 16;
+    const sx = Math.floor(gs.char_pos.x / 16) * 16;
+    const sy = Math.floor((gs.char_pos.y - 8) / 16 + 2) * 16;
     // hidden_context.beginPath();
     // hidden_context.rect(sx + gs.camera_pos.x - 16, sy + gs.camera_pos.y, 48, 32);
     // hidden_context.stroke();
-    hidden_context.drawImage(fg_render, sx - 16, sy, 48, 32, sx + gs.camera_pos.x - 16, sy + gs.camera_pos.y, 48, 32);
+    hidden_context.drawImage(
+      fg_render,
+      sx - 16,
+      sy,
+      48,
+      32,
+      sx + gs.camera_pos.x - 16,
+      sy + gs.camera_pos.y,
+      48,
+      32
+    );
   }
 
-  // console.log("ginfo", ginfo);
+  // console.log('ginfo', ginfo);
   hidden_context.beginPath();
   hidden_context.fillStyle = 'white';
   hidden_context.fillRect(0, 0, 400, 20);
   hidden_context.fillStyle = 'black';
-  hidden_context.fillText(`${gs.char_pos.x}, ${gs.char_pos.y} (${Math.floor(gs.char_pos.x / 16)}, ${Math.floor((gs.char_pos.y + 16) / 16)}), ${ginfo.join(" ")}`, 10, 10);
+  hidden_context.fillText(
+    [
+      `${gs.char_pos.x}`,
+      `${gs.char_pos.y}`,
+      `(${Math.floor(gs.char_pos.x / 16)}`,
+      `${Math.floor((gs.char_pos.y + 16) / 16)})`,
+      `${ginfo.join(' ')}`,
+    ].join(''),
+    10,
+    10
+  );
 }
 
-export function final_animation_step(game_canvas_ctx: CanvasRenderingContext2D) {
-  game_canvas_ctx.drawImage(hidden_canvas, 0, 0, game_canvas_ctx.canvas.width, game_canvas_ctx.canvas.height);
+export function final_animation_step(
+  game_canvas_ctx: CanvasRenderingContext2D
+) {
+  game_canvas_ctx.drawImage(
+    hidden_canvas,
+    0,
+    0,
+    game_canvas_ctx.canvas.width,
+    game_canvas_ctx.canvas.height
+  );
 }

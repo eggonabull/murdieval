@@ -20,19 +20,25 @@ function build_horizontal_bush(length: number): SpriteSourceDef {
 }
 
 function flatten(layer: Layer): SpriteMapStr {
-    let map = ('  '.repeat(map_width) + "\n").repeat(map_height).split("\n").map((row) => row.split(""));
+    let map = ('  '.repeat(map_width) + "\n").repeat(map_height).slice(0, -1).split("\n").map((row) => row.split(""));
     for (let i = 0; i < layer.length; i++) {
         let draw_instruction = layer[i];
         if (!draw_instruction.def.map) {
             /* no collision checking for bounding boxes definitions */
             continue;
         }
-        draw_instruction.def.map.split("\n").forEach((row, y) => {
-            row.trim().split("").forEach((char, x) => {
-                if (char !== ' ') {
-                    map[draw_instruction.pos.y + y][draw_instruction.pos.x * 2 + x ] = char;
+        draw_instruction.def.map
+            .split("\n")
+            .map(x => x.trim())
+            .filter(x => x.length > 0)
+            .forEach((row, y) => {
+                //console.log("row", row, "y", y)
+                row.trim().split("").forEach((char, x) => {
+                    if (char !== ' ') {
+                        map[draw_instruction.pos.y + y][draw_instruction.pos.x * 2 + x ] = char;
+                    }
                 }
-            });
+            );
         });
     }
     return map.map((row) => row.join("")).join("\n");
@@ -112,7 +118,7 @@ export const shrub: SpriteSourceDef = {
 export const draw_over_player = [
     "QF", "QG", "UV", "UW", "AL", "AM",
     "AN", "AO", "AP", "AG", "AH", "AI", "AJ", "AK",
-    "PC"
+    "PC", 'QA', 'QB',
 ];
 
 export const blocks_player = [
@@ -213,6 +219,7 @@ export const layer1: Layer = [
     {def: shrub, pos: {x: 2, y: 11}},
     {def: shrub, pos: {x: 5, y: 11}},
     {def: shrub, pos: {x: 3, y: 14}},
+    {def: shrub, pos: {x: 3, y: 46}},
     {def: horizontal_bush_5, pos: {x: 41, y: 15}},
     {def: horizontal_bush_5, pos: {x: 41, y: 17}},
     {def: horizontal_bush_5, pos: {x: 41, y: 19}},
@@ -220,8 +227,8 @@ export const layer1: Layer = [
 
 export const layer1flattened = flatten(layer1);
 let collision_layers = [layer0Map, layer1flattened];
-console.log("layer0Map", layer0Map)
-console.log("layer1flattened", layer1flattened)
+// console.log("layer0Map", layer0Map)
+// console.log("layer1flattened", layer1flattened)
 
 export function get_ground_info(pos: Position) {
     let y = Math.floor((pos.y + 24) / sprite_cell_size); /* foot position */

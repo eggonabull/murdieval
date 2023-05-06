@@ -15,8 +15,8 @@ const gs: GameState = {
   cwidth: 0,
   cheight: 0,
   camera_pos: {x: 0, y: 0},
-  char_pos: {x: 32, y: 32},
-  last_pos: {x: 512, y: 384},
+  char_pos: {x: 32, y: 64},
+  last_pos: {x: 512, y: 684},
   ms_passed: 0,
   direction: Direction.North,
   walking: false,
@@ -28,7 +28,7 @@ const keyArray: {[key: string]: boolean} = {};
 window.onfocus = function () {
   if (!frame_requested) {
     frame_requested = true;
-    window.requestAnimationFrame(gameLoop);
+    window.requestAnimationFrame(game_loop);
   }
 };
 
@@ -68,7 +68,6 @@ function begin() {
   }
   bg_render = bg_sprite_map;
 
-  console.log("layer1flattened", layer1flattened)
   const fg_sprite_map = draw_sprite_map(layer0Sprite, layer1flattened, undefined, bg_sprite_map.width);
   if (!fg_sprite_map) {
     console.log('bad fg_sprite_map');
@@ -77,10 +76,10 @@ function begin() {
   fg_render = fg_sprite_map;
   //console.log("fg_render", fg_render)
 
-  window.requestAnimationFrame(gameLoop);
+  window.requestAnimationFrame(game_loop);
 }
 
-function gameLoop(timestamp: DOMHighResTimeStamp) {
+function game_loop(timestamp: DOMHighResTimeStamp) {
   frame_requested = false;
   gs.ms_passed = timestamp - old_timestamp;
   if (gs.ms_passed > 10) {
@@ -92,7 +91,7 @@ function gameLoop(timestamp: DOMHighResTimeStamp) {
   animate_fg(gs);
   game_canvas_ctx.drawImage(hidden_canvas, 0, 0);
   if (document.hasFocus()) {
-    window.requestAnimationFrame(gameLoop);
+    window.requestAnimationFrame(game_loop);
     frame_requested = true;
   }
 }
@@ -135,7 +134,7 @@ function get_char_bb(gs: GameState): CopyBounds {
 
 function animate_bg(gs: GameState) {
   let bgx = gs.cwidth / 2 - gs.char_pos.x;
-  let bgy = gs.cheight / 2 - gs.char_pos.y;
+  let bgy = gs.cheight / 2 - (gs.char_pos.y);
   if (bgx > 0) bgx = 0;
   if (bgy > 0) bgy = 0;
   if (bgx < gs.cwidth - bg_render.width) bgx = gs.cwidth - bg_render.width;
@@ -165,9 +164,7 @@ function animate_fg(gs: GameState) {
     char_bb.h
   );
 
-  // hidden_context.fillStyle = 'white';
-  // hidden_context.fillRect(0, 0, 400, 20);
-  // hidden_context.fillStyle = 'black';
+  
   //let head_ginfo = get_ground_info({...gs.char_pos, y: gs.char_pos.y - 16});
   let ginfo = get_ground_info(gs.char_pos);
 
@@ -181,7 +178,11 @@ function animate_fg(gs: GameState) {
   }
 
   // console.log("ginfo", ginfo);
-  // hidden_context.fillText(`${gs.char_pos.x}, ${gs.char_pos.y} (${Math.floor(gs.char_pos.x / 16)}, ${Math.floor((gs.char_pos.y + 16) / 16)}), ${ginfo.join(" ")}`, 10, 10);
+  hidden_context.beginPath();
+  hidden_context.fillStyle = 'white';
+  hidden_context.fillRect(0, 0, 400, 20);
+  hidden_context.fillStyle = 'black';
+  hidden_context.fillText(`${gs.char_pos.x}, ${gs.char_pos.y} (${Math.floor(gs.char_pos.x / 16)}, ${Math.floor((gs.char_pos.y + 16) / 16)}), ${ginfo.join(" ")}`, 10, 10);
 }
 
 function update_gs(gs: GameState) {

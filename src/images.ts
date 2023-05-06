@@ -26,20 +26,12 @@ export function draw_sprite_map(
     lines.shift();
   }
 
-  console.log("lines[0]", lines[0])
-  if (lines[0][0] === ' ') {
-    for (let line = 0; line < lines.length; line += 1) {
-      let leading_spaces = lines[0].match(/^ +(?:\w)/);
-      if (leading_spaces && leading_spaces.length) {
-        var lead_trim = leading_spaces[0].length;
-        console.log(line, lines[line], lines[line].substring(lead_trim))
-        lines[line] = lines[line].substring(lead_trim);
-      }
-    }
-  }
-
   const map_width = width || (lines[0].length * sprite_cell_size) / 2;
   const map_height = lines.length * sprite_cell_size;
+  console.log("map_width", map_width, "map_height", map_height, "lines.length", lines.length)
+  for(var i = 0; i < lines.length; i++) {
+    console.log("line", i, "length", lines[i].length, "line", lines[i])
+  }
 
   let canvas;
   let ctx;
@@ -83,6 +75,19 @@ export function draw_sprite_map(
       const dx = (ci / 2) * sprite_cell_size;
       const dy = li * sprite_cell_size;
       ctx.drawImage(sprite_map, sx, sy, sprite_cell_size, sprite_cell_size, dx, dy, sprite_cell_size, sprite_cell_size);
+      
+      // debug stuff
+      // ctx.fillStyle = `rgba(${Math.round(255 / 1024 * dx * 19) % 255}, ${Math.round(255 / 768 * dy * 19) % 255}, 255, 0.5)`;
+      // ctx.beginPath();
+      // ctx.rect(dx, dy, sprite_cell_size, sprite_cell_size);
+      // ctx.fill();
+      // ctx.font = '8px monospace';
+      // let str = `${dy}`;
+      // // if ((li + ci / 2) % 2 === 0) {
+      // //   str = `${dx}`;
+      // // }
+      // ctx.fillStyle = `black`;
+      // ctx.fillText(str, dx, dy + 8);
     }
   }
   return canvas;

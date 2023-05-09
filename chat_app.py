@@ -44,7 +44,7 @@ def index():
     return render_template("index.html")
 
 @app.route("/sampler", methods=("GET", "POST"))
-def index():
+def sampler():
     return render_template("sampler.html")
 
 @app.route("/src/<path:filename>", methods=("GET",))
